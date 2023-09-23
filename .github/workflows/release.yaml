@@ -31,10 +31,10 @@ jobs:
           repository: HL7/fhir-ig-history-template
           path: history-template
 
-      - name: Checkout medigree/smart-releases to ./webroot
+      - name: Checkout DigitalSQR/smart-releases to ./webroot
         uses: actions/checkout@v2
         with:
-          repository: medigree/smart-releases
+          repository: DigitalSQR/smart-releases
           path: webroot
 
       - name: Checkout FHIR/ig-registry to ./ig-registry

@@ -1,0 +1,67 @@
+name: ReleaseBuld
+
+on:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: hl7fhir/ig-publisher-base:latest
+    steps:
+      - name: Gather prerequisites
+        run: >
+          gosu publisher /home/publisher/bin/with-latest-sushi.sh &&
+          curl -L https://github.com/HL7/fhir-ig-publisher/releases/latest/download/publisher.jar -o "./publisher.jar" --create-dirs
+
+      - name: Checkout current repo to ./source
+        uses: actions/checkout@v2
+        with:
+#          repository: medigree/core
+          path: source
+
+      - name: Checkout HL7/fhir-ig-history-template to ./history-template
+        uses: actions/checkout@v2
+        with:
+          repository: HL7/fhir-ig-history-template
+          path: history-template
+
+      - name: Checkout medigree/smart-releases to ./webroot
+        uses: actions/checkout@v2
+        with:
+          repository: medigree/smart-releases
+          path: webroot
+
+      - name: Checkout FHIR/ig-registry to ./ig-registry
+        uses: actions/checkout@v2
+        with:
+          repository: FHIR/ig-registry
+          path: ig-registry
+
+      - name: Create folder
+        uses: docker://hl7fhir/ig-publisher-base:latest
+        with:
+          entrypoint: /bin/sh
+          args: -c "mkdir -p ./fhir-package-cache && chown 1001:127 ./fhir-package-cache"
+
+      - name: Run publisher command
+        run: java -jar ./publisher.jar publisher -ig core -package-cache-folder ./fhir-package-cache
+
+      - name: Run publisher command for publishing release
+        run: java -Dfile.encoding=UTF-8 -jar publisher.jar -go-publish -package-cache-folder ./fhir-package-cache -source source -web $(pwd)/webroot -registry ./ig-registry/fhir-ig-list.json -history ./history-template -templates $(pwd)/webroot/templates
+
+
+      - name: Deploy main
+        uses: JamesIves/github-pages-deploy-action@v4.4.2
+#        if: ${{ steps.branch-name.outputs.is_default }} == 'true'
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: ./webroot # The folder the action should deploy.
+          target-folder: website
+          commit-message: Deploy website preview
+          single-commit: true
+          clean-exclude: branches

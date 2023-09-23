@@ -1,4 +1,4 @@
-name: ReleaseBuld
+name: ReleaseBuild
 
 on:
   workflow_call: # Reusable by other workflows
@@ -11,19 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: hl7fhir/ig-publisher-base:latest
     steps:
-      - name: Gather prerequisites
-        run: >
-          gosu publisher /home/publisher/bin/with-latest-sushi.sh &&
-          curl -L https://github.com/HL7/fhir-ig-publisher/releases/latest/download/publisher.jar -o "./publisher.jar" --create-dirs
-
       - name: Checkout current repo to ./source
         uses: actions/checkout@v2
-        with:
-#          repository: medigree/core
-          path: source
 
       - name: Checkout HL7/fhir-ig-history-template to ./history-template
         uses: actions/checkout@v2
@@ -31,11 +21,8 @@ jobs:
           repository: HL7/fhir-ig-history-template
           path: history-template
 
-      - name: Checkout DigitalSQR/smart-releases to ./webroot
-        uses: actions/checkout@v2
-        with:
-          repository: DigitalSQR/smart-releases
-          path: webroot
+      - name: Clone DigitalSQR/smart-releases into ./webroot
+        run: git clone https://github.com/DigitalSQR/smart-releases.git webroot
 
       - name: Checkout FHIR/ig-registry to ./ig-registry
         uses: actions/checkout@v2
@@ -44,26 +31,19 @@ jobs:
           path: ig-registry
 
       - name: Create folder
-        uses: docker://hl7fhir/ig-publisher-base:latest
-        with:
-          entrypoint: /bin/sh
-          args: -c "mkdir -p ./fhir-package-cache && chown 1001:127 ./fhir-package-cache"
+        run: mkdir -p ./fhir-package-cache && chown 1001:127 ./fhir-package-cache
 
       - name: Run publisher command
         run: java -jar ./publisher.jar publisher -ig source -package-cache-folder ./fhir-package-cache
 
       - name: Run publisher command for publishing release
-        run: java -Dfile.encoding=UTF-8 -jar publisher.jar -go-publish -package-cache-folder ./fhir-package-cache -source source -web $(pwd)/webroot -registry ./ig-registry/fhir-ig-list.json -history ./history-template -templates $(pwd)/webroot/templates
+        run: java -Dfile.encoding=UTF-8 -jar publisher.jar -go-publish -package-cache-folder ./fhir-package-cache -source source -web ./webroot -registry ./ig-registry/fhir-ig-list.json -history ./history-template -templates ./webroot/templates
 
       - name: debug- List dirs
         run: find . -type d
 
-      - name: Configure git to trust the workspace despite the different owner
-        run:
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
       - name: Deploy main
-        uses: JamesIves/github-pages-deploy-action@v4.4.3
+        uses: JamesIves/github-pages-deploy-action@v4.4.2
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: ./webroot # The folder the action should deploy.

@@ -68,4 +68,4 @@ jobs:
           target-folder: website
           commit-message: Deploy website preview
           single-commit: true
-          clean-exclude: branches
+          clean: false

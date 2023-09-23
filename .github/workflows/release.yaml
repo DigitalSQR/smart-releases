@@ -58,6 +58,9 @@ jobs:
       - name: debug- List dirs
         run: find . -type d
 
+      - name: Configure git to trust the workspace despite the different owner
+        run:
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Deploy main
         uses: JamesIves/github-pages-deploy-action@v4.4.2
@@ -70,6 +73,7 @@ jobs:
           single-commit: true
           clean: false
 
+        
 #      - name: Deploy to gh-pages
 #        uses: peaceiris/actions-gh-pages@v3
 #        with:

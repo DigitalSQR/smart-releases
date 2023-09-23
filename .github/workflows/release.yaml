@@ -44,10 +44,7 @@ jobs:
           path: ig-registry
 
       - name: Create folder
-        uses: docker://hl7fhir/ig-publisher-base:latest
-        with:
-          entrypoint: /bin/sh
-          args: -c "mkdir -p ./fhir-package-cache && chown 1001:127 ./fhir-package-cache"
+        run: "mkdir -p ./fhir-package-cache && chown 1001:127 ./fhir-package-cache"
 
       - name: Run publisher command
         run: java -jar ./publisher.jar publisher -ig source -package-cache-folder ./fhir-package-cache
@@ -55,16 +52,17 @@ jobs:
       - name: Run publisher command for publishing release
         run: java -Dfile.encoding=UTF-8 -jar publisher.jar -go-publish -package-cache-folder ./fhir-package-cache -source source -web $(pwd)/webroot -registry ./ig-registry/fhir-ig-list.json -history ./history-template -templates $(pwd)/webroot/templates
 
+      - name: Install rsync 📚
+        run: |
+          apt-get update && apt-get install -y rsync
+          
       - name: debug- List dirs
         run: find . -type d
 
       - name: Configure git to trust the workspace despite the different owner
         run:
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory ./webroot
 
-      - name: Install rsync 📚
-        run: |
-          apt-get update && apt-get install -y rsync
 
       - name: Deploy main
         uses: JamesIves/github-pages-deploy-action@v4.4.3
@@ -76,7 +74,7 @@ jobs:
           commit-message: Deploy website preview
           single-commit: true
           clean: false
-          verbose: true # Add this line for debug output
+
         
 #      - name: Deploy to gh-pages
 #        uses: peaceiris/actions-gh-pages@v3

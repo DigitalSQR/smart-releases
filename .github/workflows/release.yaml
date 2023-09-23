@@ -59,13 +59,19 @@ jobs:
         run: find . -type d
 
 
-      - name: Deploy main
-        uses: JamesIves/github-pages-deploy-action@v4.4.2
-#        if: ${{ steps.branch-name.outputs.is_default }} == 'true'
+#      - name: Deploy main
+#        uses: JamesIves/github-pages-deploy-action@v4.4.2
+#        with:
+#          branch: gh-pages # The branch the action should deploy to.
+#          folder: ./webroot # The folder the action should deploy.
+#          target-folder: website
+#          commit-message: Deploy website preview
+#          single-commit: true
+#          clean: false
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: ./webroot # The folder the action should deploy.
-          target-folder: website
-          commit-message: Deploy website preview
-          single-commit: true
-          clean: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./webroot
+          destination_dir: website

@@ -72,7 +72,7 @@ jobs:
           commit-message: Deploy website preview
           single-commit: true
           clean: false
-
+          verbose: true # Add this line for debug output
         
 #      - name: Deploy to gh-pages
 #        uses: peaceiris/actions-gh-pages@v3

@@ -24,6 +24,7 @@ jobs:
         with:
 #          repository: medigree/core
           path: source
+          fetch-depth: 0  # Fetch all history for all branches and tags.
 
       - name: Checkout HL7/fhir-ig-history-template to ./history-template
         uses: actions/checkout@v2
@@ -36,7 +37,9 @@ jobs:
         with:
           repository: DigitalSQR/smart-releases
           path: webroot
+          fetch-depth: 0  # Fetch all history for all branches and tags.
 
+          
       - name: Checkout FHIR/ig-registry to ./ig-registry
         uses: actions/checkout@v2
         with:

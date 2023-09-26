@@ -89,6 +89,7 @@ jobs:
 
       - name: Deploy to gh-pages
         run: |
+          cd webroot
           git fetch
           git checkout gh-pages
           mkdir -p website

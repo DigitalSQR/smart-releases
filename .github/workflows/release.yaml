@@ -67,16 +67,16 @@ jobs:
           git config --global --add safe.directory ./webroot
 
 
-      - name: Deploy main
-        uses: JamesIves/github-pages-deploy-action@v4.4.3
-        with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: ./webroot # The folder the action should deploy.
-          token: ${{ secrets.GITHUB_TOKEN }}
-          target-folder: website
-          commit-message: Deploy website preview
-          single-commit: true
-          clean: false
+#      - name: Deploy main
+#        uses: JamesIves/github-pages-deploy-action@v4.4.3
+#        with:
+#          branch: gh-pages # The branch the action should deploy to.
+#          folder: ./webroot # The folder the action should deploy.
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          target-folder: website
+#          commit-message: Deploy website preview
+#          single-commit: true
+#          clean: false
 
         
 #      - name: Deploy to gh-pages
@@ -85,3 +85,24 @@ jobs:
 #          github_token: ${{ secrets.GITHUB_TOKEN }}
 #          publish_dir: ./webroot
 #          destination_dir: website
+
+
+      - name: Deploy to gh-pages
+        run: |
+          git fetch
+          git checkout gh-pages
+          mkdir -p website
+          cp -r ./webroot/* ./website/
+          git add website
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit --message "Deploy website preview" --author "GitHub Actions <actions@github.com>"
+            git push
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_COMMITTER_NAME: GitHub Actions
+          GIT_COMMITTER_EMAIL: actions@github.com
